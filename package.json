@@ -1,0 +1,10 @@
+{
+  "name": "isds-backup",
+  "type": "module",
+  "scripts": {
+    "start": "node ."
+  },
+  "dependencies": {
+    "puppeteer": "^5.1.0"
+  }
+}
