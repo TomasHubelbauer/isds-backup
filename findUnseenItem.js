@@ -4,20 +4,23 @@ import puppeteer from 'puppeteer';
 export default async function findUnseenItem(
   /** @type {puppeteer.ElementHandle} */ container,
   /** @type {string} */ selector,
-  /** @type {(element: puppeteer.ElementHandle) => T} */ inPageProjector,
-  /** @type {(projection: T) => S} */ outPageProjector,
+  /** @type {(element: puppeteer.ElementHandle) => T} */ browserProjector,
+  /** @type {(projection: T) => S} */ nodeProjector,
   /** @type {(projection: S) => boolean} */ predicate
 ) {
   const elements = await container.$$(selector);
-  const inPageProjections = await Promise.all(elements.map(element => element.evaluate(inPageProjector)));
-  const outPageProjections = inPageProjections.map(outPageProjector);
-  const index = outPageProjections.findIndex(predicate);
+  /** @type {T[]} */
+  const browserProjections = await Promise.all(elements.map(element => element.evaluate(browserProjector)));
+  const nodeProjections = browserProjections.map(nodeProjector);
+  const index = nodeProjections.findIndex(predicate);
   if (index === -1) {
     return null;
   }
 
+  const number = index + 1;
   const length = elements.length;
   const element = elements[index];
-  const projection = outPageProjections[index];
-  return { index, length, element, projection };
+  const browserProjection = browserProjections[index];
+  const nodeProjection = nodeProjections[index];
+  return { index, number, length, element, browserProjection, nodeProjection };
 }

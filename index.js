@@ -4,6 +4,8 @@ import collapseWhitespace from './collapseWhitespace.js';
 import extractMessageBits from './extractMessageBits.js';
 import readFileIfExists from './readFileIfExists.js';
 import findUnseenItem from './findUnseenItem.js';
+import deriveMessageKey from './deriveMessageKey.js';
+import trimPrefix from './trimPrefix.js';
 
 void async function () {
   const browser = await puppeteer.launch({ headless: false });
@@ -41,7 +43,7 @@ void async function () {
       }
 
       // Mark this box as seen
-      console.log(`Opening box ${box.index}/${box.length} ${box.projection}`);
+      console.log(`Opening box ${box.number}/${box.length} ${box.nodeProjection}`);
       boxes.push(box);
 
       // Go to the box page in order to start backing up messages
@@ -61,7 +63,7 @@ void async function () {
           page,
           '.messages-list .messages-list__row',
           extractMessageBits,
-          JSON.stringify,
+          deriveMessageKey,
           key => !messages.includes(key)
         );
 
@@ -70,16 +72,14 @@ void async function () {
           break;
         }
 
-        console.log(`Opening message ${message.index}/${message.length} ${message.projection}`);
-
-        // TODO: Add inPageProjection and outPageProjection to findUnseenItem and get the ID from inPageProjection
-        const id;
+        const id = trimPrefix(message.browserProjection.id, 'ID:').trim();
+        console.log(`Opening message ${message.number}/${message.length} #${id}: ${message.nodeProjection}`);
 
         // Skip the message if it has an up-to-date backup according to its metadata
         const backup = await readFileIfExists(`data/${id}.json`);
-        if (backup === message.projection) {
-          console.log('Skipping a backed up message:', message.projection);
-          messages.push(message.projection);
+        if (backup === message.nodeProjection) {
+          console.log('Skipping a backed up message:', message.id);
+          messages.push(message.nodeProjection);
           break;
         }
 
@@ -87,9 +87,9 @@ void async function () {
         await makeDirectoryIfNotExists(`data/${id}`);
 
         // TODO: Download attachments to data/${id}/${name}.${ext}
-        console.log('Backing up a message', message.projection);
+        console.log('Backing up a message', id, message.nodeProjection);
         await page.screenshot({ path: `data/${id}/screenshot.png`, fullPage: true });
-        console.log('Backed up a message', message.projection);
+        console.log('Backed up a message', id, message.nodeProjection);
 
         // Go back to message list page and search for more new messages
         await page.goto(url);
