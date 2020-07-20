@@ -19,3 +19,5 @@ Also probably check the file count in the directory to make sure we don't check
 too early - before the file even begins to download and creates `.crdownload`.
 
 ### Alert on new messages by pointing them out in the console
+
+### Run headless and have a different UI to present the QR code and progress in
