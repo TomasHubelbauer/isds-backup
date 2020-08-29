@@ -6,10 +6,7 @@ messages backing up new ones and downloading their attachments.
 
 ## Running
 
-```
-npm install
-npm start
-```
+`npm start`
 
 ## To-Do
 

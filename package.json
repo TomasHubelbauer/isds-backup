@@ -2,6 +2,7 @@
   "name": "isds-backup",
   "type": "module",
   "scripts": {
+    "prestart": "npm install",
     "start": "node ."
   },
   "dependencies": {
